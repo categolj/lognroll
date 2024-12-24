@@ -33,7 +33,7 @@ jobs:
       run: |
         cat <<'EOF' > fly.toml
         [build]
-        image = "ghcr.io/categolj/lognroll:native"
+        image = "ghcr.io/categolj/lognroll:native_amd64"
         
         [[services]]
         internal_port = 8080
