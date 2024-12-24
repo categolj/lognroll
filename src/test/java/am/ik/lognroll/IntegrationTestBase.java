@@ -9,7 +9,7 @@ import org.springframework.web.client.RestClient;
 import org.zalando.logbook.spring.LogbookClientHttpRequestInterceptor;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-		properties = { "lognroll.db.path=/tmp/lognroll-test.db", "logging.logback.ecs-encoder.enabled=false" })
+		properties = { "lognroll.db.path=/tmp/lognroll-test.db", "logging.structured.format.console=" })
 public abstract class IntegrationTestBase {
 
 	@Autowired
