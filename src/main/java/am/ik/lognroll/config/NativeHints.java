@@ -1,8 +1,5 @@
 package am.ik.lognroll.config;
 
-import java.lang.reflect.Method;
-import java.util.HashSet;
-
 import com.google.protobuf.DescriptorProtos;
 import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.ArrayValue;
@@ -18,11 +15,18 @@ import jakarta.annotation.Nullable;
 import org.eclipse.jetty.http.pathmap.PathSpecSet;
 import org.eclipse.jetty.util.AsciiLowerCaseSet;
 import org.eclipse.jetty.util.ClassMatcher;
-
+import org.flywaydb.core.internal.configuration.extensions.DeployScriptFilenameConfigurationExtension;
+import org.flywaydb.core.internal.configuration.extensions.PrepareScriptFilenameConfigurationExtension;
+import org.flywaydb.core.internal.publishing.PublishingConfigurationExtension;
 import org.springframework.aot.hint.ExecutableMode;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportRuntimeHints;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 @Configuration(proxyBeanMethods = false)
 @ImportRuntimeHints(NativeHints.RuntimeHints.class)
@@ -43,6 +47,11 @@ public class NativeHints {
 					.registerConstructor(PathSpecSet.class.getConstructor(), ExecutableMode.INVOKE)
 					.registerConstructor(AsciiLowerCaseSet.class.getConstructor(), ExecutableMode.INVOKE)
 					.registerConstructor(HashSet.class.getConstructor(), ExecutableMode.INVOKE);
+				List<Method> methods = new ArrayList<>();
+				methods.addAll(List.of(DeployScriptFilenameConfigurationExtension.class.getDeclaredMethods()));
+				methods.addAll(List.of(PrepareScriptFilenameConfigurationExtension.class.getDeclaredMethods()));
+				methods.addAll(List.of(PublishingConfigurationExtension.class.getDeclaredMethods()));
+				methods.forEach(method -> hints.reflection().registerMethod(method, ExecutableMode.INVOKE));
 				for (Method method : LogsData.class.getDeclaredMethods()) {
 					hints.reflection().registerMethod(method, ExecutableMode.INVOKE);
 				}
