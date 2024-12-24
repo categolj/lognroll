@@ -141,7 +141,7 @@ jobs:
       runs-on: ${{ matrix.with.runs-on }}
       binary_suffix: ${{ matrix.with.binary_suffix }}
   deploy-to-fly:
-    needs: build-oci-image-native-amd64
+    needs: push-multi-arch-image-native
     permissions:
       id-token: write
       contents: read
