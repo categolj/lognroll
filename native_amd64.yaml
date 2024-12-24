@@ -1,2 +1,2 @@
-image: ghcr.io/categolj/lognroll@sha256:fabcf1a81787ca63664e926d6134aabcf40c84f015b3d19482a52331a733dd28
-git_revision: 1d8d8cec4f510c2796e9cbf52f2221fa504ea165
+image: ghcr.io/categolj/lognroll@sha256:93bf7fd5057271f06fa29fac19dd08b9d2550a434ddaa33f0b0fa58c7c186709
+git_revision: 5c555091fd1b0d1b236cd0e4f888299d13f4313b
