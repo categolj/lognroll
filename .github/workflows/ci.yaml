@@ -23,6 +23,7 @@ jobs:
       contents: read
     uses: categolj/workflows/.github/workflows/unit-test.yaml@main
   build-oci-image-jvm-amd64:
+    if: github.ref == 'refs/heads/main'
     permissions:
       packages: write
       contents: read
@@ -33,6 +34,7 @@ jobs:
       image_file: jvm_amd64.yaml
       runs_on: ubuntu-latest
   build-oci-image-jvm-aarch64:
+    if: github.ref == 'refs/heads/main'
     permissions:
       packages: write
       contents: read
@@ -43,6 +45,7 @@ jobs:
       image_file: jvm_aarch64.yaml
       runs_on: ARM64
   push-multi-arch-image-jvm:
+    if: github.ref == 'refs/heads/main'
     permissions:
       packages: write
       contents: read
@@ -53,6 +56,7 @@ jobs:
     with:
       prefix: jvm
   save-image-jvm-amd64:
+    if: github.ref == 'refs/heads/main'
     permissions:
       packages: write
       contents: write
@@ -62,6 +66,7 @@ jobs:
       image_name: jvm_amd64
       image_file: jvm_amd64.yaml
   save-image-jvm-aarch64:
+    if: github.ref == 'refs/heads/main'
     permissions:
       packages: write
       contents: write
@@ -71,6 +76,7 @@ jobs:
       image_name: jvm_aarch64
       image_file: jvm_aarch64.yaml
   build-oci-image-native-amd64:
+    if: github.ref == 'refs/heads/main'
     permissions:
       packages: write
       contents: read
@@ -81,6 +87,7 @@ jobs:
       image_file: native_amd64.yaml
       runs_on: ubuntu-latest
   build-oci-image-native-aarch64:
+    if: github.ref == 'refs/heads/main'
     permissions:
       packages: write
       contents: read
@@ -91,6 +98,7 @@ jobs:
       image_file: native_aarch64.yaml
       runs_on: ARM64
   push-multi-arch-image-native:
+    if: github.ref == 'refs/heads/main'
     permissions:
       packages: write
       contents: read
@@ -101,6 +109,7 @@ jobs:
     with:
       prefix: native
   save-image-native-amd64:
+    if: github.ref == 'refs/heads/main'
     permissions:
       packages: write
       contents: write
@@ -110,6 +119,7 @@ jobs:
       image_name: native_amd64
       image_file: native_amd64.yaml
   save-image-native-aarch64:
+    if: github.ref == 'refs/heads/main'
     permissions:
       packages: write
       contents: write
@@ -119,6 +129,7 @@ jobs:
       image_name: native_aarch64
       image_file: native_aarch64.yaml
   build-native-binaries:
+    if: github.ref == 'refs/heads/main'
     needs: build-oci-image-native-amd64
     permissions:
       contents: write
@@ -141,6 +152,7 @@ jobs:
       runs-on: ${{ matrix.with.runs-on }}
       binary_suffix: ${{ matrix.with.binary_suffix }}
   deploy-to-fly:
+    if: github.ref == 'refs/heads/main'
     needs: save-image-native-amd64
     permissions:
       id-token: write
@@ -149,6 +161,7 @@ jobs:
     secrets:
       VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
   publish-native-binaries:
+    if: github.ref == 'refs/heads/main'
     needs: build-native-binaries
     permissions:
       contents: write
