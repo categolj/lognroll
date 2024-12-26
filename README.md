@@ -22,19 +22,19 @@ Lognroll offers pre-built binaries for x86_64-pc-linux, aarch64-pc-linux, x86_64
 
 * For x86_64-pc-linux
 ```
-curl -sL -o lognroll https://github.com/making/lognroll/releases/download/tip/lognroll-x86_64-pc-linux 
+curl -sL -o lognroll https://github.com/categolj/lognroll/releases/download/tip/lognroll-x86_64-pc-linux 
 ```
 * For aarch64-pc-linux
 ```
-curl -sL -o lognroll https://github.com/making/lognroll/releases/download/tip/lognroll-aarch64-pc-linux 
+curl -sL -o lognroll https://github.com/categolj/lognroll/releases/download/tip/lognroll-aarch64-pc-linux 
 ```
 * For x86_64-apple-darwin (Intel Mac)
 ```
-curl -sL -o lognroll https://github.com/making/lognroll/releases/download/tip/lognroll-x86_64-apple-darwin
+curl -sL -o lognroll https://github.com/categolj/lognroll/releases/download/tip/lognroll-x86_64-apple-darwin
 ```
 * For aarch64-apple-darwin (Apple Silicon)
 ```
-curl -sL -o lognroll https://github.com/making/lognroll/releases/download/tip/lognroll-aarch64-apple-darwin
+curl -sL -o lognroll https://github.com/categolj/lognroll/releases/download/tip/lognroll-aarch64-apple-darwin
 ```
 
 After downloading the appropriate binary, you can start lognroll with the following commands:
@@ -132,7 +132,7 @@ Go to the web UI http://localhost:4318 (username: empty, password: `changeme` sa
 
 Clear the `from` field since the sample log is too old and click the "View Logs" button, you'll see the search result as below: 
 
-<img width="1024" alt="image" src="https://github.com/making/lognroll/assets/106908/d3513ca2-825a-4229-8dc2-fe4f02460ef6">
+<img width="1024" alt="image" src="https://github.com/categolj/lognroll/assets/106908/d3513ca2-825a-4229-8dc2-fe4f02460ef6">
 
 ## Send from OTEL Collector
 
