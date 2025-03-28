@@ -159,7 +159,7 @@
 						<path>
 							<groupId>com.uber.nullaway</groupId>
 							<artifactId>nullaway</artifactId>
-							<version>0.11.2</version>
+							<version>0.12.6</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
