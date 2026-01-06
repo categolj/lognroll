@@ -1,8 +1,8 @@
-image: ghcr.io/categolj/lognroll@sha256:537935eeded03f6c4fae293a37fda0263a5ef95e6676ac73b1b313a89cc676e3
-git_revision: ff4893e1b6564331398f64149b72526c54c09a5a
+image: ghcr.io/categolj/lognroll@sha256:ea115bfc6fb4ef6f299cd3684fb37dc0bf97d6e78e1ca5bee08ccc2462c6b13a
+git_revision: 4f5ca49254756ce0a89279549728d43281755e48
 deployment:
   image:
     repository: ghcr.io/categolj/lognroll
-    digest: sha256:537935eeded03f6c4fae293a37fda0263a5ef95e6676ac73b1b313a89cc676e3
+    digest: sha256:ea115bfc6fb4ef6f299cd3684fb37dc0bf97d6e78e1ca5bee08ccc2462c6b13a
   podLabels:
-    github.com/revision: ff4893e1b6564331398f64149b72526c54c09a5a
+    github.com/revision: 4f5ca49254756ce0a89279549728d43281755e48
