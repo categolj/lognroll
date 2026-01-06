@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -156,19 +157,67 @@ public class JdbcLogQuery implements LogQuery {
 		StringBuilder sql = new StringBuilder("""
 				SELECT strftime('%%Y-%%m-%%dT%%H', observed_timestamp / 1000, 'unixepoch') || ':' ||
 				   printf('%%02d', (strftime('%%M', observed_timestamp / 1000, 'unixepoch') / %d) * %d) ||
-				   ':00Z'         AS date,
+				   ':00Z' AS date,
+				   COALESCE(severity_text, '') AS severity_text,
 				   count(log_id) AS count
 				""".formatted(interval.toMinutes(), interval.toMinutes()));
 		QueryAndParams queryAndParams = buildQueryAndParams(request);
 		sql.append(queryAndParams.query());
 		sql.append("""
-				GROUP BY date
+				GROUP BY date, severity_text
 				ORDER BY date ASC;
 				""");
-		return this.jdbcClient.sql(sql.toString()) //
-			.params(queryAndParams.params()) //
-			.query((rs, rowNum) -> new Volume(Instant.parse(rs.getString("date")), rs.getLong("count"))) //
+		List<SeverityCount> severityCounts = this.jdbcClient.sql(sql.toString())
+			.params(queryAndParams.params())
+			.query((rs, rowNum) -> new SeverityCount(Instant.parse(rs.getString("date")), rs.getString("severity_text"),
+					rs.getLong("count")))
 			.list();
+		return aggregateVolumes(severityCounts);
+	}
+
+	private List<Volume> aggregateVolumes(List<SeverityCount> severityCounts) {
+		Map<Instant, Volume> volumeMap = new LinkedHashMap<>();
+		for (SeverityCount sc : severityCounts) {
+			Volume volume = volumeMap.computeIfAbsent(sc.date(), date -> new Volume(date, 0, 0, 0, 0, 0));
+			volume = switch (sc.category()) {
+				case "error" -> new Volume(volume.date(), volume.error() + sc.count(), volume.warn(), volume.info(),
+						volume.debug(), volume.other());
+				case "warn" -> new Volume(volume.date(), volume.error(), volume.warn() + sc.count(), volume.info(),
+						volume.debug(), volume.other());
+				case "info" -> new Volume(volume.date(), volume.error(), volume.warn(), volume.info() + sc.count(),
+						volume.debug(), volume.other());
+				case "debug" -> new Volume(volume.date(), volume.error(), volume.warn(), volume.info(),
+						volume.debug() + sc.count(), volume.other());
+				default -> new Volume(volume.date(), volume.error(), volume.warn(), volume.info(), volume.debug(),
+						volume.other() + sc.count());
+			};
+			volumeMap.put(sc.date(), volume);
+		}
+		return new ArrayList<>(volumeMap.values());
+	}
+
+	private record SeverityCount(Instant date, String severityText, long count) {
+
+		String category() {
+			if (severityText == null || severityText.isEmpty()) {
+				return "other";
+			}
+			String upper = severityText.toUpperCase();
+			if (upper.contains("ERROR") || upper.contains("FATAL") || upper.contains("CRITICAL")) {
+				return "error";
+			}
+			if (upper.contains("WARN")) {
+				return "warn";
+			}
+			if (upper.contains("INFO")) {
+				return "info";
+			}
+			if (upper.contains("DEBUG") || upper.contains("TRACE")) {
+				return "debug";
+			}
+			return "other";
+		}
+
 	}
 
 	@Override

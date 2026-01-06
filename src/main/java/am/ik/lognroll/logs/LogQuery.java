@@ -19,7 +19,7 @@ public interface LogQuery {
 
 	int delete(SearchRequest request);
 
-	record Volume(Instant date, long count) {
+	record Volume(Instant date, long error, long warn, long info, long debug, long other) {
 
 	}
 

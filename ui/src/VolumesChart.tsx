@@ -1,10 +1,35 @@
-import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis, ResponsiveContainer } from 'recharts';
-// @ts-expect-error TODO
-import { JSONToHTMLTable } from '@kevincobain2000/json-to-html-table';
+import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis, ResponsiveContainer, Legend } from 'recharts';
 import { TooltipProps } from 'recharts/types/component/Tooltip';
 import React from 'react';
 
-export type VolumeData = { date: string; count: number };
+// Severity categories matching getSeverityVariant in LogViewer
+export type VolumeData = {
+  date: string;
+  error: number;
+  warn: number;
+  info: number;
+  debug: number;
+  other: number;
+};
+
+// Colors matching status colors in tailwind.config.js and Badge variants
+const SEVERITY_COLORS = {
+  error: '#E74C3C',
+  warn: '#F29C33',
+  info: '#3998DB',
+  debug: '#6B7280',
+  other: '#9CA3AF',
+} as const;
+
+const SEVERITY_LABELS = {
+  error: 'ERROR',
+  warn: 'WARN',
+  info: 'INFO',
+  debug: 'DEBUG',
+  other: 'OTHER',
+} as const;
+
+type SeverityKey = keyof typeof SEVERITY_COLORS;
 
 const formatDate = (date: Date, useLocalTimezone: boolean): string => {
   if (useLocalTimezone) {
@@ -17,7 +42,12 @@ const fillMissingData = (data: VolumeData[], interval: number, useLocalTimezone:
   if (data.length <= 1) {
     return data.map(d => ({
       date: formatDate(new Date(d.date), useLocalTimezone),
-      count: d.count,
+      error: d.error,
+      warn: d.warn,
+      info: d.info,
+      debug: d.debug,
+      other: d.other,
+      total: d.error + d.warn + d.info + d.debug + d.other,
     }));
   }
   const filledData = [];
@@ -27,23 +57,62 @@ const fillMissingData = (data: VolumeData[], interval: number, useLocalTimezone:
   while (currentTime <= endTime) {
     const givenData = data[index];
     if (currentTime.getTime() === new Date(givenData.date).getTime()) {
-      filledData.push({ date: formatDate(currentTime, useLocalTimezone), count: givenData.count });
+      filledData.push({
+        date: formatDate(currentTime, useLocalTimezone),
+        error: givenData.error,
+        warn: givenData.warn,
+        info: givenData.info,
+        debug: givenData.debug,
+        other: givenData.other,
+        total: givenData.error + givenData.warn + givenData.info + givenData.debug + givenData.other,
+      });
       index++;
     } else {
-      filledData.push({ date: formatDate(currentTime, useLocalTimezone), count: 0 });
+      filledData.push({
+        date: formatDate(currentTime, useLocalTimezone),
+        error: 0,
+        warn: 0,
+        info: 0,
+        debug: 0,
+        other: 0,
+        total: 0,
+      });
     }
     currentTime.setMinutes(currentTime.getMinutes() + interval);
   }
   return filledData;
 };
 
-const TooltipContent = (props: TooltipProps<string, string>) => {
+const TooltipContent = (props: TooltipProps<number, string>) => {
   if (!props.payload || props.payload.length < 1) {
-    return <></>;
+    return null;
   }
+  const data = props.payload[0]?.payload;
+  if (!data) return null;
+
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-dark-700 dark:bg-dark-800">
-      <JSONToHTMLTable data={props.payload[0].payload} tableClassName="table-modern text-xs" />
+    <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-lg dark:border-dark-700 dark:bg-dark-800">
+      <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">{data.date}</div>
+      <div className="space-y-1">
+        {(['error', 'warn', 'info', 'debug', 'other'] as SeverityKey[]).map((key) => (
+          data[key] > 0 && (
+            <div key={key} className="flex items-center justify-between gap-4 text-xs">
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="w-2.5 h-2.5 rounded-sm"
+                  style={{ backgroundColor: SEVERITY_COLORS[key] }}
+                />
+                <span className="text-gray-600 dark:text-gray-400">{SEVERITY_LABELS[key]}</span>
+              </div>
+              <span className="font-medium text-gray-800 dark:text-gray-200">{data[key].toLocaleString()}</span>
+            </div>
+          )
+        ))}
+        <div className="flex items-center justify-between gap-4 text-xs border-t border-gray-200 dark:border-dark-700 pt-1 mt-1">
+          <span className="text-gray-600 dark:text-gray-400 font-medium">Total</span>
+          <span className="font-bold text-gray-800 dark:text-gray-200">{data.total.toLocaleString()}</span>
+        </div>
+      </div>
     </div>
   );
 };
@@ -57,6 +126,9 @@ interface VolumesChartProps {
 
 const VolumesChart: React.FC<VolumesChartProps> = ({ data, interval, useLocalTimezone, onClick }) => {
   const filled = fillMissingData(data, interval, useLocalTimezone);
+
+  // Stack order: other -> debug -> info -> warn -> error (error on top)
+  const severityKeys: SeverityKey[] = ['other', 'debug', 'info', 'warn', 'error'];
 
   return (
     <div className="w-full">
@@ -77,13 +149,21 @@ const VolumesChart: React.FC<VolumesChartProps> = ({ data, interval, useLocalTim
             axisLine={false}
           />
           <Tooltip content={<TooltipContent />} cursor={{ fill: 'rgba(136, 132, 216, 0.1)' }} />
-          <Bar
-            dataKey="count"
-            fill="#8884d8"
-            radius={[4, 4, 0, 0]}
-            className="cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={(x) => onClick(x.date)}
+          <Legend
+            wrapperStyle={{ fontSize: '12px' }}
+            formatter={(value: string) => SEVERITY_LABELS[value as SeverityKey] || value}
           />
+          {severityKeys.map((key, index) => (
+            <Bar
+              key={key}
+              dataKey={key}
+              stackId="severity"
+              fill={SEVERITY_COLORS[key]}
+              radius={index === severityKeys.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+              className="cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={(x) => onClick(x.date)}
+            />
+          ))}
         </BarChart>
       </ResponsiveContainer>
     </div>

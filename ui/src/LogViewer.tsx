@@ -351,7 +351,7 @@ const LogViewer: React.FC = () => {
         <div className="space-y-2">
           {/* Search inputs */}
           <div className="flex flex-wrap items-center gap-2">
-            <div className="w-40">
+            <div className="w-80">
               <Input
                 placeholder="Search query"
                 value={query}
@@ -361,9 +361,9 @@ const LogViewer: React.FC = () => {
                 leftIcon={<MagnifyingGlassIcon className="h-4 w-4" />}
               />
             </div>
-            <div className="flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-[300px]">
               <Input
-                placeholder={'Filter (e.g. severity_text==\'ERROR\', attributes["status"]>=400)'}
+                placeholder={'Filter (e.g. severity_text==\'ERROR\')'}
                 value={filter}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setFilter(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -528,7 +528,7 @@ const LogViewer: React.FC = () => {
                         {log.serviceName}
                       </TableCell>
                       <TableCell onClick={() => addFilter('scope', log.scope)}>{log.scope}</TableCell>
-                      <TableCell className="min-w-[600px]">
+                      <TableCell>
                         <div className="whitespace-pre-wrap break-all text-xs">
                           {log.body && shouldJsonToTable(log) ? (
                             (() => {
@@ -558,7 +558,7 @@ const LogViewer: React.FC = () => {
                       >
                         {log.spanId}
                       </TableCell>
-                      <TableCell className="min-w-[400px]">
+                      <TableCell>
                         <div className="text-xs whitespace-pre-wrap break-all">
                           {jsonToTable ? (
                             <JSONToHTMLTable data={log.attributes || []} tableClassName="table-modern" />
@@ -567,7 +567,7 @@ const LogViewer: React.FC = () => {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="min-w-[400px]">
+                      <TableCell>
                         <div className="text-xs whitespace-pre-wrap break-all">
                           {jsonToTable ? (
                             <JSONToHTMLTable data={log.resourceAttributes || []} tableClassName="table-modern" />
