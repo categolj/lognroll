@@ -100,7 +100,7 @@ jobs:
           binary_suffix: -x86_64-pc-linux
         - runs-on: ubuntu-24.04-arm
           binary_suffix: -aarch64-pc-linux
-        - runs-on: macos-13
+        - runs-on: macos-15-intel
           binary_suffix: -x86_64-apple-darwin
         - runs-on: macos-latest
           binary_suffix: -aarch64-apple-darwin
