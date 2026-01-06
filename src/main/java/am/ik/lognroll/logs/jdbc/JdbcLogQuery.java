@@ -1,14 +1,5 @@
 package am.ik.lognroll.logs.jdbc;
 
-import java.sql.Timestamp;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import am.ik.lognroll.logs.Log;
 import am.ik.lognroll.logs.LogBuilder;
 import am.ik.lognroll.logs.LogQuery;
@@ -17,7 +8,14 @@ import am.ik.lognroll.logs.filter.converter.Sqlite3FilterExpressionConverter;
 import am.ik.lognroll.logs.query.Sqlite3QueryConverter;
 import am.ik.lognroll.util.Json;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -180,15 +178,15 @@ public class JdbcLogQuery implements LogQuery {
 		for (SeverityCount sc : severityCounts) {
 			Volume volume = volumeMap.computeIfAbsent(sc.date(), date -> new Volume(date, 0, 0, 0, 0, 0));
 			volume = switch (sc.category()) {
-				case "error" -> new Volume(volume.date(), volume.error() + sc.count(), volume.warn(), volume.info(),
+				case ERROR -> new Volume(volume.date(), volume.error() + sc.count(), volume.warn(), volume.info(),
 						volume.debug(), volume.other());
-				case "warn" -> new Volume(volume.date(), volume.error(), volume.warn() + sc.count(), volume.info(),
+				case WARN -> new Volume(volume.date(), volume.error(), volume.warn() + sc.count(), volume.info(),
 						volume.debug(), volume.other());
-				case "info" -> new Volume(volume.date(), volume.error(), volume.warn(), volume.info() + sc.count(),
+				case INFO -> new Volume(volume.date(), volume.error(), volume.warn(), volume.info() + sc.count(),
 						volume.debug(), volume.other());
-				case "debug" -> new Volume(volume.date(), volume.error(), volume.warn(), volume.info(),
+				case DEBUG -> new Volume(volume.date(), volume.error(), volume.warn(), volume.info(),
 						volume.debug() + sc.count(), volume.other());
-				default -> new Volume(volume.date(), volume.error(), volume.warn(), volume.info(), volume.debug(),
+				case OTHER -> new Volume(volume.date(), volume.error(), volume.warn(), volume.info(), volume.debug(),
 						volume.other() + sc.count());
 			};
 			volumeMap.put(sc.date(), volume);
@@ -196,26 +194,36 @@ public class JdbcLogQuery implements LogQuery {
 		return new ArrayList<>(volumeMap.values());
 	}
 
-	private record SeverityCount(Instant date, String severityText, long count) {
+	private enum Category {
 
-		String category() {
+		ERROR, WARN, INFO, DEBUG, OTHER;
+
+		static Category of(String severityText) {
 			if (severityText == null || severityText.isEmpty()) {
-				return "other";
+				return OTHER;
 			}
 			String upper = severityText.toUpperCase();
 			if (upper.contains("ERROR") || upper.contains("FATAL") || upper.contains("CRITICAL")) {
-				return "error";
+				return ERROR;
 			}
 			if (upper.contains("WARN")) {
-				return "warn";
+				return WARN;
 			}
 			if (upper.contains("INFO")) {
-				return "info";
+				return INFO;
 			}
 			if (upper.contains("DEBUG") || upper.contains("TRACE")) {
-				return "debug";
+				return DEBUG;
 			}
-			return "other";
+			return OTHER;
+		}
+
+	}
+
+	private record SeverityCount(Instant date, String severityText, long count) {
+
+		Category category() {
+			return Category.of(severityText);
 		}
 
 	}
