@@ -9,16 +9,18 @@ export type VolumeData = {
   warn: number;
   info: number;
   debug: number;
+  trace: number;
   other: number;
 };
 
-// Colors matching status colors in tailwind.config.js and Badge variants
+// Colors for severity levels
 const SEVERITY_COLORS = {
-  error: '#E74C3C',
-  warn: '#F29C33',
-  info: '#3998DB',
-  debug: '#6B7280',
-  other: '#9CA3AF',
+  error: '#EF4444',
+  warn: '#F59E0B',
+  info: '#3B82F6',
+  debug: '#9CA3AF',
+  trace: '#D1D5DB',
+  other: '#E5E7EB',
 } as const;
 
 const SEVERITY_LABELS = {
@@ -26,6 +28,7 @@ const SEVERITY_LABELS = {
   warn: 'WARN',
   info: 'INFO',
   debug: 'DEBUG',
+  trace: 'TRACE',
   other: 'OTHER',
 } as const;
 
@@ -46,8 +49,9 @@ const fillMissingData = (data: VolumeData[], interval: number, useLocalTimezone:
       warn: d.warn,
       info: d.info,
       debug: d.debug,
+      trace: d.trace,
       other: d.other,
-      total: d.error + d.warn + d.info + d.debug + d.other,
+      total: d.error + d.warn + d.info + d.debug + d.trace + d.other,
     }));
   }
   const filledData = [];
@@ -63,8 +67,9 @@ const fillMissingData = (data: VolumeData[], interval: number, useLocalTimezone:
         warn: givenData.warn,
         info: givenData.info,
         debug: givenData.debug,
+        trace: givenData.trace,
         other: givenData.other,
-        total: givenData.error + givenData.warn + givenData.info + givenData.debug + givenData.other,
+        total: givenData.error + givenData.warn + givenData.info + givenData.debug + givenData.trace + givenData.other,
       });
       index++;
     } else {
@@ -74,6 +79,7 @@ const fillMissingData = (data: VolumeData[], interval: number, useLocalTimezone:
         warn: 0,
         info: 0,
         debug: 0,
+        trace: 0,
         other: 0,
         total: 0,
       });
@@ -94,7 +100,7 @@ const TooltipContent = (props: TooltipProps<number, string>) => {
     <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-lg dark:border-dark-700 dark:bg-dark-800">
       <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">{data.date}</div>
       <div className="space-y-1">
-        {(['error', 'warn', 'info', 'debug', 'other'] as SeverityKey[]).map((key) => (
+        {(['error', 'warn', 'info', 'debug', 'trace', 'other'] as SeverityKey[]).map((key) => (
           data[key] > 0 && (
             <div key={key} className="flex items-center justify-between gap-4 text-xs">
               <div className="flex items-center gap-1.5">
@@ -127,8 +133,8 @@ interface VolumesChartProps {
 const VolumesChart: React.FC<VolumesChartProps> = ({ data, interval, useLocalTimezone, onClick }) => {
   const filled = fillMissingData(data, interval, useLocalTimezone);
 
-  // Stack order: other -> debug -> info -> warn -> error (error on top)
-  const severityKeys: SeverityKey[] = ['other', 'debug', 'info', 'warn', 'error'];
+  // Stack order: other -> trace -> debug -> info -> warn -> error (error on top)
+  const severityKeys: SeverityKey[] = ['other', 'trace', 'debug', 'info', 'warn', 'error'];
 
   return (
     <div className="w-full">

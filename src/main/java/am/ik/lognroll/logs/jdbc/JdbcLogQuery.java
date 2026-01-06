@@ -176,18 +176,20 @@ public class JdbcLogQuery implements LogQuery {
 	private List<Volume> aggregateVolumes(List<SeverityCount> severityCounts) {
 		Map<Instant, Volume> volumeMap = new LinkedHashMap<>();
 		for (SeverityCount sc : severityCounts) {
-			Volume volume = volumeMap.computeIfAbsent(sc.date(), date -> new Volume(date, 0, 0, 0, 0, 0));
+			Volume volume = volumeMap.computeIfAbsent(sc.date(), date -> new Volume(date, 0, 0, 0, 0, 0, 0));
 			volume = switch (sc.category()) {
 				case ERROR -> new Volume(volume.date(), volume.error() + sc.count(), volume.warn(), volume.info(),
-						volume.debug(), volume.other());
+						volume.debug(), volume.trace(), volume.other());
 				case WARN -> new Volume(volume.date(), volume.error(), volume.warn() + sc.count(), volume.info(),
-						volume.debug(), volume.other());
+						volume.debug(), volume.trace(), volume.other());
 				case INFO -> new Volume(volume.date(), volume.error(), volume.warn(), volume.info() + sc.count(),
-						volume.debug(), volume.other());
+						volume.debug(), volume.trace(), volume.other());
 				case DEBUG -> new Volume(volume.date(), volume.error(), volume.warn(), volume.info(),
-						volume.debug() + sc.count(), volume.other());
+						volume.debug() + sc.count(), volume.trace(), volume.other());
+				case TRACE -> new Volume(volume.date(), volume.error(), volume.warn(), volume.info(), volume.debug(),
+						volume.trace() + sc.count(), volume.other());
 				case OTHER -> new Volume(volume.date(), volume.error(), volume.warn(), volume.info(), volume.debug(),
-						volume.other() + sc.count());
+						volume.trace(), volume.other() + sc.count());
 			};
 			volumeMap.put(sc.date(), volume);
 		}
@@ -196,7 +198,7 @@ public class JdbcLogQuery implements LogQuery {
 
 	private enum Category {
 
-		ERROR, WARN, INFO, DEBUG, OTHER;
+		ERROR, WARN, INFO, DEBUG, TRACE, OTHER;
 
 		static Category of(String severityText) {
 			if (severityText == null || severityText.isEmpty()) {
@@ -212,8 +214,11 @@ public class JdbcLogQuery implements LogQuery {
 			if (upper.contains("INFO")) {
 				return INFO;
 			}
-			if (upper.contains("DEBUG") || upper.contains("TRACE")) {
+			if (upper.contains("DEBUG")) {
 				return DEBUG;
+			}
+			if (upper.contains("TRACE")) {
+				return TRACE;
 			}
 			return OTHER;
 		}

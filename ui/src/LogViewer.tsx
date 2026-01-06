@@ -145,14 +145,15 @@ const calcInterval = (from: string, to: string) => {
   }
 };
 
-const getSeverityVariant = (severity?: string): 'default' | 'success' | 'error' | 'warning' | 'info' => {
-  if (!severity) return 'default';
+const getSeverityVariant = (severity?: string): 'error' | 'warning' | 'info' | 'debug' | 'trace' | 'other' => {
+  if (!severity) return 'other';
   const s = severity.toUpperCase();
   if (s.includes('ERROR') || s.includes('FATAL') || s.includes('CRITICAL')) return 'error';
   if (s.includes('WARN')) return 'warning';
   if (s.includes('INFO')) return 'info';
-  if (s.includes('DEBUG') || s.includes('TRACE')) return 'default';
-  return 'default';
+  if (s.includes('DEBUG')) return 'debug';
+  if (s.includes('TRACE')) return 'trace';
+  return 'other';
 };
 
 const getDefaultFrom = () => formatDate(new Date(new Date().getTime() - 12 * 60 * 60 * 1000));
