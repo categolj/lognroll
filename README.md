@@ -11,7 +11,7 @@ a simple OTLP log store
 * Full-Text search (trigram)
 * Built-in UI
 
-<img width="1024" alt="image" src="https://github.com/user-attachments/assets/296a074d-8fdb-46de-b350-8578864d9e82">
+<img width="1024" alt="image" src="https://github.com/user-attachments/assets/00a3c3cb-c97b-451f-afff-443e5fea80bb">
 
 > [!NOTE]
 > This is a hobby project designed to facilitate the verification of log ingestion with OTLP. It is not intended for use in environments where reliability or high performance is required.
@@ -132,7 +132,7 @@ Go to the web UI http://localhost:4318 (username: empty, password: `changeme` sa
 
 Clear the `from` field since the sample log is too old and click the "View Logs" button, you'll see the search result as below: 
 
-<img width="1024" alt="image" src="https://github.com/categolj/lognroll/assets/106908/d3513ca2-825a-4229-8dc2-fe4f02460ef6">
+<img width="1024" alt="image" src="https://github.com/user-attachments/assets/8f7dfd97-ca02-4df0-9c8c-04b80fbb2496">
 
 ## Send from OTEL Collector
 
