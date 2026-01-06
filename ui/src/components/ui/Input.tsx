@@ -36,6 +36,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               'focus:outline-none focus:ring-1',
               'dark:bg-dark-800 dark:text-gray-100 dark:placeholder-gray-500',
               'disabled:opacity-50 disabled:cursor-not-allowed',
+              'select-text',
               leftIcon && 'pl-10',
               rightIcon && 'pr-10',
               error

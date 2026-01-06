@@ -10,6 +10,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  input,
+  textarea {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
   body {
     @apply bg-white text-gray-800 dark:bg-dark-900 dark:text-gray-100;
     margin: 0;
@@ -44,7 +50,9 @@
   }
 
   .input {
-    @apply block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-dark-700 dark:bg-dark-800 dark:text-gray-100 dark:placeholder-gray-500 dark:focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-dark-700 dark:bg-dark-800 dark:text-gray-100 dark:placeholder-gray-500 dark:focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed select-text;
+    -webkit-user-select: text;
+    user-select: text;
   }
 
   .card {
@@ -52,22 +60,22 @@
   }
 
   .table-modern {
-    @apply w-full text-left text-sm;
+    @apply w-full text-left text-xs border-collapse;
   }
 
   .table-modern thead {
-    @apply bg-gray-50 dark:bg-dark-800;
+    @apply bg-gray-100 dark:bg-dark-700;
   }
 
   .table-modern th {
-    @apply px-4 py-3 font-semibold text-gray-700 dark:text-gray-300;
+    @apply px-3 py-2 font-semibold text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-dark-700;
   }
 
   .table-modern td {
-    @apply px-4 py-3 text-gray-600 dark:text-gray-400;
+    @apply px-3 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-dark-700;
   }
 
   .table-modern tbody tr {
-    @apply border-b border-gray-100 dark:border-dark-700 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors;
+    @apply hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors;
   }
 }

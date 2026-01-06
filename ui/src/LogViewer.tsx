@@ -305,10 +305,21 @@ const LogViewer: React.FC = () => {
     }
   };
 
-  const shouldJsonToTable = (log: Log) =>
-    jsonToTable && log.body && log.body.startsWith('{') && log.body.endsWith('}');
+  const tryParseJson = (body: string): object | null => {
+    try {
+      return JSON.parse(body.trim());
+    } catch {
+      return null;
+    }
+  };
+
+  const shouldJsonToTable = (log: Log) => {
+    if (!jsonToTable || !log.body) return false;
+    const trimmed = log.body.trim();
+    return (trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'));
+  };
   const shouldLogfmtToTable = (log: Log) =>
-    jsonToTable && log.body && /^[a-zA-Z0-9_]+=/.test(log.body);
+    jsonToTable && log.body && /^[a-zA-Z0-9_]+=/.test(log.body.trim());
 
   const addFilter = (field: string, value: string | number | undefined) => {
     if (value === undefined || value === null) return;
@@ -485,11 +496,11 @@ const LogViewer: React.FC = () => {
                   <TableHeader>{severityLabel}</TableHeader>
                   <TableHeader>service_name</TableHeader>
                   <TableHeader>scope</TableHeader>
-                  <TableHeader className="min-w-[300px]">body</TableHeader>
+                  <TableHeader className="min-w-[600px]">body</TableHeader>
                   <TableHeader>trace_id</TableHeader>
                   <TableHeader>span_id</TableHeader>
-                  <TableHeader className="min-w-[300px]">attributes</TableHeader>
-                  <TableHeader className="min-w-[300px]">resource_attributes</TableHeader>
+                  <TableHeader className="min-w-[400px]">attributes</TableHeader>
+                  <TableHeader className="min-w-[400px]">resource_attributes</TableHeader>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -517,10 +528,17 @@ const LogViewer: React.FC = () => {
                         {log.serviceName}
                       </TableCell>
                       <TableCell onClick={() => addFilter('scope', log.scope)}>{log.scope}</TableCell>
-                      <TableCell className="max-w-md">
+                      <TableCell className="min-w-[600px]">
                         <div className="whitespace-pre-wrap break-all text-xs">
                           {log.body && shouldJsonToTable(log) ? (
-                            <JSONToHTMLTable data={JSON.parse(log.body)} tableClassName="table-modern" />
+                            (() => {
+                              const parsed = tryParseJson(log.body);
+                              return parsed ? (
+                                <JSONToHTMLTable data={parsed} tableClassName="table-modern" />
+                              ) : (
+                                log.body
+                              );
+                            })()
                           ) : shouldLogfmtToTable(log) ? (
                             <JSONToHTMLTable data={logfmt.parse(log.body)} tableClassName="table-modern" />
                           ) : (
@@ -540,7 +558,7 @@ const LogViewer: React.FC = () => {
                       >
                         {log.spanId}
                       </TableCell>
-                      <TableCell className="min-w-[300px]">
+                      <TableCell className="min-w-[400px]">
                         <div className="text-xs whitespace-pre-wrap break-all">
                           {jsonToTable ? (
                             <JSONToHTMLTable data={log.attributes || []} tableClassName="table-modern" />
@@ -549,7 +567,7 @@ const LogViewer: React.FC = () => {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="min-w-[300px]">
+                      <TableCell className="min-w-[400px]">
                         <div className="text-xs whitespace-pre-wrap break-all">
                           {jsonToTable ? (
                             <JSONToHTMLTable data={log.resourceAttributes || []} tableClassName="table-modern" />
