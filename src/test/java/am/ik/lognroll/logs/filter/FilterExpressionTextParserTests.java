@@ -202,4 +202,28 @@ public class FilterExpressionTextParserTests {
 				new Filter.Key("attributes[\"method\"]"), new Filter.Value("GET")));
 	}
 
+	@Test
+	public void testResourceAttributesWithDottedKey() {
+		// resource_attributes["k8s.cluster.name"] == 'apricot'
+		Expression exp = parser.parse("resource_attributes[\"k8s.cluster.name\"] == 'apricot'");
+		assertThat(exp).isEqualTo(new Filter.Expression(Filter.ExpressionType.EQ,
+				new Filter.Key("resource_attributes[\"k8s.cluster.name\"]"), new Filter.Value("apricot")));
+	}
+
+	@Test
+	public void testAttributesWithDottedKey() {
+		// attributes["k8s.pod.name"] == 'my-pod'
+		Expression exp = parser.parse("attributes[\"k8s.pod.name\"] == 'my-pod'");
+		assertThat(exp).isEqualTo(new Filter.Expression(Filter.ExpressionType.EQ,
+				new Filter.Key("attributes[\"k8s.pod.name\"]"), new Filter.Value("my-pod")));
+	}
+
+	@Test
+	public void testAttributesWithDottedKeySingleQuote() {
+		// attributes['k8s.namespace.name'] == 'default'
+		Expression exp = parser.parse("attributes['k8s.namespace.name'] == 'default'");
+		assertThat(exp).isEqualTo(new Filter.Expression(Filter.ExpressionType.EQ,
+				new Filter.Key("attributes['k8s.namespace.name']"), new Filter.Value("default")));
+	}
+
 }

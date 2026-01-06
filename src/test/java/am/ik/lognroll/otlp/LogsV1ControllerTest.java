@@ -147,6 +147,179 @@ class LogsV1ControllerTest extends IntegrationTestBase {
 		assertThat(content).extractingJsonPathMapValue("$.logs[0].resourceAttributes").isEmpty();
 	}
 
+	@Test
+	void filterByAttributesWithDottedKey() throws Exception {
+		// Ingest test data
+		String json = StreamUtils.copyToString(new ClassPathResource("logs.json").getInputStream(),
+				StandardCharsets.UTF_8);
+		ResponseEntity<Void> response = this.restClient.post()
+			.uri("/v1/logs")
+			.contentType(MediaType.APPLICATION_JSON)
+			.header(HttpHeaders.AUTHORIZATION, "Bearer changeme")
+			.body(json)
+			.retrieve()
+			.toBodilessEntity();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+		// Filter by attributes with dotted key - should match
+		String logs = this.restClient.get()
+			.uri(uriBuilder -> uriBuilder.path("/api/logs")
+				.queryParam("filter", "attributes[\"string.attribute\"] == 'some string'")
+				.build())
+			.header(HttpHeaders.AUTHORIZATION, "Bearer changeme")
+			.retrieve()
+			.body(String.class);
+		JsonContent<Object> content = this.json.from(logs);
+		assertThat(content).extractingJsonPathNumberValue("$.logs.length()").isEqualTo(1);
+		assertThat(content).extractingJsonPathStringValue("$.logs[0].body").isEqualTo("Example log record");
+		assertThat(content).extractingJsonPathStringValue("$.logs[0].attributes['string.attribute']")
+			.isEqualTo("some string");
+
+		// Filter by attributes with dotted key - should not match
+		String logsNoMatch = this.restClient.get()
+			.uri(uriBuilder -> uriBuilder.path("/api/logs")
+				.queryParam("filter", "attributes[\"string.attribute\"] == 'wrong value'")
+				.build())
+			.header(HttpHeaders.AUTHORIZATION, "Bearer changeme")
+			.retrieve()
+			.body(String.class);
+		JsonContent<Object> contentNoMatch = this.json.from(logsNoMatch);
+		assertThat(contentNoMatch).extractingJsonPathNumberValue("$.logs.length()").isEqualTo(0);
+
+		// Filter by attributes with dotted key using single quotes
+		String logsSingleQuote = this.restClient.get()
+			.uri(uriBuilder -> uriBuilder.path("/api/logs")
+				.queryParam("filter", "attributes['int.attribute'] == 10")
+				.build())
+			.header(HttpHeaders.AUTHORIZATION, "Bearer changeme")
+			.retrieve()
+			.body(String.class);
+		JsonContent<Object> contentSingleQuote = this.json.from(logsSingleQuote);
+		assertThat(contentSingleQuote).extractingJsonPathNumberValue("$.logs.length()").isEqualTo(1);
+		assertThat(contentSingleQuote).extractingJsonPathNumberValue("$.logs[0].attributes['int.attribute']")
+			.isEqualTo(10);
+
+		// Filter by attributes with scope attribute (dotted key)
+		String logsScope = this.restClient.get()
+			.uri(uriBuilder -> uriBuilder.path("/api/logs")
+				.queryParam("filter", "attributes[\"my.scope.attribute\"] == 'some scope attribute'")
+				.build())
+			.header(HttpHeaders.AUTHORIZATION, "Bearer changeme")
+			.retrieve()
+			.body(String.class);
+		JsonContent<Object> contentScope = this.json.from(logsScope);
+		assertThat(contentScope).extractingJsonPathNumberValue("$.logs.length()").isEqualTo(1);
+		assertThat(contentScope).extractingJsonPathStringValue("$.logs[0].attributes['my.scope.attribute']")
+			.isEqualTo("some scope attribute");
+	}
+
+	@Test
+	void filterByResourceAttributesWithDottedKey() throws Exception {
+		// Ingest test data with resource attributes containing dotted keys
+		String json = """
+				{
+				  "resourceLogs": [
+				    {
+				      "resource": {
+				        "attributes": [
+				          {
+				            "key": "k8s.cluster.name",
+				            "value": { "stringValue": "apricot" }
+				          },
+				          {
+				            "key": "k8s.namespace.name",
+				            "value": { "stringValue": "default" }
+				          },
+				          {
+				            "key": "service.name",
+				            "value": { "stringValue": "my.service" }
+				          }
+				        ]
+				      },
+				      "scopeLogs": [
+				        {
+				          "scope": { "name": "test.library" },
+				          "logRecords": [
+				            {
+				              "timeUnixNano": "1544712660300000000",
+				              "observedTimeUnixNano": "1544712660300000000",
+				              "severityNumber": 10,
+				              "severityText": "Information",
+				              "body": { "stringValue": "Test log with resource attributes" }
+				            }
+				          ]
+				        }
+				      ]
+				    }
+				  ]
+				}
+				""";
+		ResponseEntity<Void> response = this.restClient.post()
+			.uri("/v1/logs")
+			.contentType(MediaType.APPLICATION_JSON)
+			.header(HttpHeaders.AUTHORIZATION, "Bearer changeme")
+			.body(json)
+			.retrieve()
+			.toBodilessEntity();
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+		// Filter by resourceAttributes with dotted key (k8s.cluster.name) - should match
+		String logs = this.restClient.get()
+			.uri(uriBuilder -> uriBuilder.path("/api/logs")
+				.queryParam("filter", "resourceAttributes[\"k8s.cluster.name\"] == 'apricot'")
+				.build())
+			.header(HttpHeaders.AUTHORIZATION, "Bearer changeme")
+			.retrieve()
+			.body(String.class);
+		JsonContent<Object> content = this.json.from(logs);
+		assertThat(content).extractingJsonPathNumberValue("$.logs.length()").isEqualTo(1);
+		assertThat(content).extractingJsonPathStringValue("$.logs[0].body")
+			.isEqualTo("Test log with resource attributes");
+		assertThat(content).extractingJsonPathStringValue("$.logs[0].serviceName").isEqualTo("my.service");
+		assertThat(content).extractingJsonPathStringValue("$.logs[0].resourceAttributes['k8s.cluster.name']")
+			.isEqualTo("apricot");
+		assertThat(content).extractingJsonPathStringValue("$.logs[0].resourceAttributes['k8s.namespace.name']")
+			.isEqualTo("default");
+
+		// Filter by resourceAttributes with dotted key - should not match
+		String logsNoMatch = this.restClient.get()
+			.uri(uriBuilder -> uriBuilder.path("/api/logs")
+				.queryParam("filter", "resourceAttributes[\"k8s.cluster.name\"] == 'wrong-cluster'")
+				.build())
+			.header(HttpHeaders.AUTHORIZATION, "Bearer changeme")
+			.retrieve()
+			.body(String.class);
+		JsonContent<Object> contentNoMatch = this.json.from(logsNoMatch);
+		assertThat(contentNoMatch).extractingJsonPathNumberValue("$.logs.length()").isEqualTo(0);
+
+		// Filter by resourceAttributes with dotted key using single quotes
+		String logsSingleQuote = this.restClient.get()
+			.uri(uriBuilder -> uriBuilder.path("/api/logs")
+				.queryParam("filter", "resourceAttributes['k8s.namespace.name'] == 'default'")
+				.build())
+			.header(HttpHeaders.AUTHORIZATION, "Bearer changeme")
+			.retrieve()
+			.body(String.class);
+		JsonContent<Object> contentSingleQuote = this.json.from(logsSingleQuote);
+		assertThat(contentSingleQuote).extractingJsonPathNumberValue("$.logs.length()").isEqualTo(1);
+		assertThat(contentSingleQuote)
+			.extractingJsonPathStringValue("$.logs[0].resourceAttributes['k8s.namespace.name']")
+			.isEqualTo("default");
+
+		// Filter by resource_attributes (snake_case) with dotted key
+		String logsSnakeCase = this.restClient.get()
+			.uri(uriBuilder -> uriBuilder.path("/api/logs")
+				.queryParam("filter", "resource_attributes[\"k8s.cluster.name\"] == 'apricot'")
+				.build())
+			.header(HttpHeaders.AUTHORIZATION, "Bearer changeme")
+			.retrieve()
+			.body(String.class);
+		JsonContent<Object> contentSnakeCase = this.json.from(logsSnakeCase);
+		assertThat(contentSnakeCase).extractingJsonPathNumberValue("$.logs.length()").isEqualTo(1);
+		assertThat(contentSnakeCase).extractingJsonPathStringValue("$.logs[0].resourceAttributes['k8s.cluster.name']")
+			.isEqualTo("apricot");
+	}
+
 	static byte[] compress(byte[] body) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(baos)) {

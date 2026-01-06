@@ -182,4 +182,28 @@ public class Sqlite3FilterExpressionConverterTests {
 			.isEqualTo("json_extract(resource_attributes, '$.\"user_agent.original\"') == \"kube-probe//\"");
 	}
 
+	@Test
+	public void testResourceAttributesWithMultipleDottedKey() {
+		// resource_attributes["k8s.cluster.name"] == 'apricot'
+		String vectorExpr = converter.convertExpression(new Filter.Expression(Filter.ExpressionType.EQ,
+				new Filter.Key("resource_attributes[\"k8s.cluster.name\"]"), new Filter.Value("apricot")));
+		assertThat(vectorExpr).isEqualTo("json_extract(resource_attributes, '$.\"k8s.cluster.name\"') == \"apricot\"");
+	}
+
+	@Test
+	public void testAttributesWithMultipleDottedKey() {
+		// attributes["k8s.pod.name"] == 'my-pod'
+		String vectorExpr = converter.convertExpression(new Filter.Expression(Filter.ExpressionType.EQ,
+				new Filter.Key("attributes[\"k8s.pod.name\"]"), new Filter.Value("my-pod")));
+		assertThat(vectorExpr).isEqualTo("json_extract(attributes, '$.\"k8s.pod.name\"') == \"my-pod\"");
+	}
+
+	@Test
+	public void testAttributesWithMultipleDottedKeySingleQuote() {
+		// attributes['k8s.namespace.name'] == 'default'
+		String vectorExpr = converter.convertExpression(new Filter.Expression(Filter.ExpressionType.EQ,
+				new Filter.Key("attributes['k8s.namespace.name']"), new Filter.Value("default")));
+		assertThat(vectorExpr).isEqualTo("json_extract(attributes, '$.\"k8s.namespace.name\"') == \"default\"");
+	}
+
 }

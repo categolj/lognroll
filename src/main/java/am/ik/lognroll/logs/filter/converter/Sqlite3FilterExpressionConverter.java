@@ -74,7 +74,7 @@ public class Sqlite3FilterExpressionConverter extends AbstractFilterExpressionCo
 	}
 
 	private static final Pattern ATTRIBUTES_PATTERN = Pattern
-		.compile("(\\w+\\.?\\w*)\\[\"(\\w+\\.?\\w*)\"\\]|(\\w+\\.?\\w*)\\['(\\w+\\.?\\w*)'\\]");
+		.compile("(\\w+\\.?\\w*)\\[\"([\\w.]+)\"\\]|(\\w+\\.?\\w*)\\['([\\w.]+)'\\]");
 
 	@Override
 	protected void doKey(Filter.Key key, StringBuilder context) {
