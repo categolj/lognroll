@@ -11,7 +11,7 @@ a simple OTLP log store
 * Full-Text search (trigram)
 * Built-in UI
 
-<img width="1024" alt="image" src="https://github.com/user-attachments/assets/00a3c3cb-c97b-451f-afff-443e5fea80bb">
+<img width="1024" alt="image" src="https://github.com/user-attachments/assets/fac6e80a-c487-419a-a06d-04d8aee1e2e1">
 
 > [!NOTE]
 > This is a hobby project designed to facilitate the verification of log ingestion with OTLP. It is not intended for use in environments where reliability or high performance is required.
