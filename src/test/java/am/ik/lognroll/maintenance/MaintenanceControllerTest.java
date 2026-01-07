@@ -112,13 +112,17 @@ class MaintenanceControllerTest extends IntegrationTestBase {
 			.toEntity(String.class);
 		assertThat(countResponse.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
 
-		// Step 5: Vacuum is allowed during maintenance mode
+		// Step 5: Vacuum is allowed during maintenance mode (autoMaintenance=false for
+		// manual control)
 		ResponseEntity<Void> vacuumResponse = this.restClient.post()
-			.uri("/api/logs/vacuum")
+			.uri("/api/logs/vacuum?autoMaintenance=false")
 			.header(HttpHeaders.AUTHORIZATION, "Bearer changeme")
 			.retrieve()
 			.toBodilessEntity();
 		assertThat(vacuumResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+
+		// Wait for async vacuum to complete
+		Thread.sleep(100);
 
 		// Step 6: Disable maintenance mode
 		ResponseEntity<Void> disableResponse = this.restClient.post()
