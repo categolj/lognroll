@@ -20,6 +20,7 @@ import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -118,14 +119,14 @@ public class QueryController {
 	}
 
 	@DeleteMapping(path = "/api/logs")
-	public ResponseEntity<Void> delete(@RequestParam(required = false) String query,
+	public DeleteResponse delete(@RequestParam(required = false) String query,
 			@RequestParam(required = false) String filter, @RequestParam(required = false) Instant from,
 			@RequestParam(required = false) Instant to) {
 		LogQuery.SearchRequest request = buildRequest(query, null, filter, from, to);
 		try {
 			int deleted = this.logQuery.delete(request);
 			logger.info("Deleted {} logs", deleted);
-			this.logStore.vacuum();
+			return new DeleteResponse(deleted);
 		}
 		catch (UncategorizedSQLException e) {
 			if (e.getCause() instanceof SQLiteException) {
@@ -133,6 +134,13 @@ public class QueryController {
 			}
 			throw e;
 		}
+	}
+
+	@PostMapping(path = "/api/logs/vacuum")
+	public ResponseEntity<Void> vacuum() {
+		logger.info("Vacuum started");
+		this.logStore.vacuum();
+		logger.info("Vacuum completed");
 		return ResponseEntity.noContent().build();
 	}
 
@@ -143,6 +151,9 @@ public class QueryController {
 	}
 
 	public record VolumesResponse(List<LogQuery.Volume> volumes) {
+	}
+
+	public record DeleteResponse(int deleted) {
 	}
 
 }

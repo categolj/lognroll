@@ -5,6 +5,8 @@ import java.util.List;
 import am.ik.lognroll.auth.AuthProps;
 import am.ik.lognroll.auth.SimpleAuthInterceptor;
 import am.ik.lognroll.logs.LogQuery.Cursor;
+import am.ik.lognroll.maintenance.MaintenanceInterceptor;
+import am.ik.lognroll.maintenance.MaintenanceMode;
 import am.ik.pagination.web.CursorPageRequestHandlerMethodArgumentResolver;
 
 import org.springframework.context.annotation.Configuration;
@@ -17,8 +19,11 @@ public class WebConfig implements WebMvcConfigurer {
 
 	private final AuthProps authProps;
 
-	public WebConfig(AuthProps authProps) {
+	private final MaintenanceMode maintenanceMode;
+
+	public WebConfig(AuthProps authProps, MaintenanceMode maintenanceMode) {
 		this.authProps = authProps;
+		this.maintenanceMode = maintenanceMode;
 	}
 
 	@Override
@@ -30,6 +35,7 @@ public class WebConfig implements WebMvcConfigurer {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(new SimpleAuthInterceptor(this.authProps));
+		registry.addInterceptor(new MaintenanceInterceptor(this.maintenanceMode));
 	}
 
 }
