@@ -4,9 +4,11 @@ import io.micrometer.core.instrument.config.MeterFilter;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.http.converter.protobuf.ProtobufHttpMessageConverter;
 
 @Configuration(proxyBeanMethods = false)
+@EnableAsync
 public class AppConfig {
 
 	@Bean

@@ -118,7 +118,7 @@ class MaintenanceControllerTest extends IntegrationTestBase {
 			.header(HttpHeaders.AUTHORIZATION, "Bearer changeme")
 			.retrieve()
 			.toBodilessEntity();
-		assertThat(vacuumResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+		assertThat(vacuumResponse.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
 
 		// Step 6: Disable maintenance mode
 		ResponseEntity<Void> disableResponse = this.restClient.post()

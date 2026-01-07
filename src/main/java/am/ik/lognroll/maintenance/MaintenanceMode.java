@@ -9,6 +9,8 @@ public class MaintenanceMode {
 
 	private final AtomicBoolean enabled = new AtomicBoolean(false);
 
+	private final AtomicBoolean vacuumInProgress = new AtomicBoolean(false);
+
 	public boolean isEnabled() {
 		return this.enabled.get();
 	}
@@ -17,8 +19,20 @@ public class MaintenanceMode {
 		this.enabled.set(true);
 	}
 
-	public void disable() {
+	public boolean disable() {
+		if (this.vacuumInProgress.get()) {
+			return false;
+		}
 		this.enabled.set(false);
+		return true;
+	}
+
+	public boolean isVacuumInProgress() {
+		return this.vacuumInProgress.get();
+	}
+
+	public void setVacuumInProgress(boolean inProgress) {
+		this.vacuumInProgress.set(inProgress);
 	}
 
 }

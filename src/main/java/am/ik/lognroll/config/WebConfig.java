@@ -8,6 +8,7 @@ import am.ik.lognroll.logs.LogQuery.Cursor;
 import am.ik.lognroll.maintenance.MaintenanceInterceptor;
 import am.ik.lognroll.maintenance.MaintenanceMode;
 import am.ik.pagination.web.CursorPageRequestHandlerMethodArgumentResolver;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -21,9 +22,12 @@ public class WebConfig implements WebMvcConfigurer {
 
 	private final MaintenanceMode maintenanceMode;
 
-	public WebConfig(AuthProps authProps, MaintenanceMode maintenanceMode) {
+	private final ObjectMapper objectMapper;
+
+	public WebConfig(AuthProps authProps, MaintenanceMode maintenanceMode, ObjectMapper objectMapper) {
 		this.authProps = authProps;
 		this.maintenanceMode = maintenanceMode;
+		this.objectMapper = objectMapper;
 	}
 
 	@Override
@@ -35,7 +39,7 @@ public class WebConfig implements WebMvcConfigurer {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(new SimpleAuthInterceptor(this.authProps));
-		registry.addInterceptor(new MaintenanceInterceptor(this.maintenanceMode));
+		registry.addInterceptor(new MaintenanceInterceptor(this.maintenanceMode, this.objectMapper));
 	}
 
 }

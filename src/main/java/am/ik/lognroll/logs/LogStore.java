@@ -1,6 +1,7 @@
 package am.ik.lognroll.logs;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface LogStore {
 
@@ -8,6 +9,6 @@ public interface LogStore {
 
 	void clear();
 
-	void vacuum();
+	CompletableFuture<Void> vacuum();
 
 }

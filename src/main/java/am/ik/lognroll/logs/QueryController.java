@@ -6,6 +6,7 @@ import java.util.List;
 
 import am.ik.lognroll.logs.LogQuery.Cursor;
 import am.ik.lognroll.logs.filter.FilterExpressionTextParser;
+import am.ik.lognroll.maintenance.MaintenanceMode;
 import am.ik.pagination.CursorPageRequest;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
@@ -32,15 +33,19 @@ public class QueryController {
 
 	private final LogStore logStore;
 
+	private final MaintenanceMode maintenanceMode;
+
 	private final FilterExpressionTextParser parser = new FilterExpressionTextParser();
 
 	private final Logger logger = LoggerFactory.getLogger(QueryController.class);
 
 	private final Resource dbFile;
 
-	public QueryController(LogQuery logQuery, LogStore logStore, @Value("file://${lognroll.db.path}") Resource dbFile) {
+	public QueryController(LogQuery logQuery, LogStore logStore, MaintenanceMode maintenanceMode,
+			@Value("file://${lognroll.db.path}") Resource dbFile) {
 		this.logQuery = logQuery;
 		this.logStore = logStore;
+		this.maintenanceMode = maintenanceMode;
 		this.dbFile = dbFile;
 	}
 
@@ -137,11 +142,24 @@ public class QueryController {
 	}
 
 	@PostMapping(path = "/api/logs/vacuum")
-	public ResponseEntity<Void> vacuum() {
-		logger.info("Vacuum started");
-		this.logStore.vacuum();
-		logger.info("Vacuum completed");
-		return ResponseEntity.noContent().build();
+	public ResponseEntity<Void> vacuum(
+			@RequestParam(name = "autoMaintenance", required = false, defaultValue = "true") boolean autoMaintenance) {
+		if (autoMaintenance) {
+			this.maintenanceMode.enable();
+			logger.info("Auto maintenance mode enabled");
+		}
+		this.maintenanceMode.setVacuumInProgress(true);
+		this.logStore.vacuum().whenComplete((result, ex) -> {
+			this.maintenanceMode.setVacuumInProgress(false);
+			if (autoMaintenance) {
+				this.maintenanceMode.disable();
+				logger.info("Auto maintenance mode disabled");
+			}
+			if (ex != null) {
+				logger.error("Vacuum failed", ex);
+			}
+		});
+		return ResponseEntity.accepted().build();
 	}
 
 	public record LogsResponse(List<Log> logs) {

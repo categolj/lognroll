@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import am.ik.lognroll.logs.Log;
@@ -11,7 +12,11 @@ import am.ik.lognroll.logs.LogStore;
 import am.ik.lognroll.util.Json;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -22,6 +27,8 @@ public class JdbcLogStore implements LogStore {
 	private final JdbcTemplate jdbcTemplate;
 
 	private final ObjectMapper objectMapper;
+
+	private final Logger logger = LoggerFactory.getLogger(JdbcLogStore.class);
 
 	public JdbcLogStore(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
 		this.jdbcTemplate = jdbcTemplate;
@@ -76,9 +83,13 @@ public class JdbcLogStore implements LogStore {
 		this.jdbcTemplate.update("DELETE FROM log");
 	}
 
+	@Async
 	@Override
-	public void vacuum() {
+	public CompletableFuture<Void> vacuum() {
+		logger.info("Vacuum started");
 		this.jdbcTemplate.execute("VACUUM");
+		logger.info("Vacuum completed");
+		return CompletableFuture.completedFuture(null);
 	}
 
 }
