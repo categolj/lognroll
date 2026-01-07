@@ -69,7 +69,7 @@ export function useLogSearchParams() {
       }
 
       return params;
-    }, { replace: true });
+    });
   }, [setSearchParams]);
 
   const setQuery = useCallback((query: string) => updateParams({ query }), [updateParams]);
