@@ -21,13 +21,13 @@ class QueryConverterTest {
 	@Test
 	void or() {
 		String query = Sqlite3QueryConverter.convertQuery("hello or world");
-		assertThat(query).isEqualTo("\"hello\" OR \"world\"");
+		assertThat(query).isEqualTo("(\"hello\" OR \"world\")");
 	}
 
 	@Test
 	void not() {
 		String query = Sqlite3QueryConverter.convertQuery("hello -world");
-		assertThat(query).isEqualTo("\"hello\" NOT \"world\"");
+		assertThat(query).isEqualTo("\"hello\" AND NOT \"world\"");
 	}
 
 	@Test
